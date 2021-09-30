@@ -16,7 +16,7 @@ if {[using_api libc]} {
 	# trigger include of 'sys/signal.h' to make NSIG visible
 	lappend cppflags "-D__BSD_VISIBLE"
 	# prevent gcc headers from defining __size_t
-	lappend cppflags "-D__FreeBSD__=8"
+	lappend cppflags "-D__FreeBSD__=12"
 }
 
 if {[using_api stdcxx]} {
@@ -30,6 +30,7 @@ if {[using_api stdcxx]} {
 	if {$arch == "x86_64"} {
 		lappend include_dirs [file join $stdcxx_include_dir spec x86_64 stdcxx]
 	}
+
 	if {$arch == "arm_v8a"} {
 		lappend include_dirs [file join $stdcxx_include_dir spec arm_64 stdcxx]
 	}
@@ -50,6 +51,23 @@ if {[using_api sdl]} {
 	lappend cmake_quirk_args "-DSDL_INCLUDE_DIR=$sdl_include_dir"
 	lappend cmake_quirk_args "-DCMAKE_SYSTEM_LIBRARY_PATH='$abi_dir'"
 	lappend cmake_quirk_args "-DSDL_LIBRARY:STRING=':sdl.lib.so'"
+}
+
+if {[using_api sdl2]} {
+
+	# CMake's detection of libSDL expects the library named uppercase
+	set symlink_name [file join $abi_dir SDL2.lib.so]
+	if {![file exists $symlink_name]} {
+		file link -symbolic $symlink_name "sdl2.lib.so" }
+
+	# search for headers in the inlude/SDL sub directory
+	set sdl2_include_dir [file join [api_archive_dir sdl2] include SDL2]
+	lappend include_dirs $sdl2_include_dir
+
+	# bring CMake on the right track to find the headers and library
+	lappend cmake_quirk_args "-DSDL2_INCLUDE_DIR=$sdl2_include_dir"
+	lappend cmake_quirk_args "-DCMAKE_SYSTEM_LIBRARY_PATH='$abi_dir'"
+	lappend cmake_quirk_args "-DSDL2_LIBRARY:STRING=':sdl2.lib.so'"
 }
 
 if {[using_api curl]} {
