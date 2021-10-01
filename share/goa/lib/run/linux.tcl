@@ -167,50 +167,41 @@ proc generate_runtime_config { } {
 		}
 
 		append nic_config_nodes "\n" {
-			<start name="nic_drv" caps="100" ld="no">
-				<binary name="linux_nic_drv"/>
+			<start name="nic_router" caps="100">
 				<resource name="RAM" quantum="4M"/>
-				<provides> <service name="Nic"/> </provides>}
-		if {$nic_label != ""} {
-			append nic_config_nodes {
-				<config mode="nic_server"> <nic tap="} $nic_label {"/> </config>}
-		}
-		append nic_config_nodes {
-				<route> <any-service> <parent/> </any-service> </route>
+				<provides>
+					<service name="Nic"/>
+					<service name="Uplink"/>
+				</provides>
+				<config>
+					<default-policy domain="default"/>
+					<policy label="nic_drv -> " domain="uplink"/>
+					<domain name="uplink">
+						<nat domain="default" tcp-ports="1000" udp-ports="1000" icmp-ids="1000"/>
+					</domain>
+					<domain name="default" interface="10.0.10.1/24">
+						<dhcp-server ip_first="10.0.10.2" ip_last="10.0.10.200" dns_server_from="uplink"/>
+						<tcp dst="0.0.0.0/0">
+							<permit-any domain="uplink"/>
+						</tcp>
+						<udp dst="0.0.0.0/0">
+							<permit-any domain="uplink"/>
+						</udp>
+						<icmp dst="0.0.0.0/0" domain="uplink"/>
+					</domain>
+				</config>
+				<route>
+					<service name="PD"> <parent/> </service>
+					<service name="CPU"> <parent/> </service>
+					<service name="LOG"> <parent/> </service>
+					<service name="ROM"> <parent/> </service>
+					<service name="Timer"> <child name="timer"/> </service>
+				</route>
 			</start>
 		}
 
 		append nic_route "\n\t\t\t\t\t" \
-			{<service name="Nic"> <child name="nic_drv"/> </service>}
-	}
-
-	set uplink_config_nodes ""
-	set uplink_provides     ""
-	catch {
-		set uplink_node [query_node /runtime/requires/uplink $runtime_file]
-		set uplink_label ""
-		catch {
-			set uplink_label [query_node string(/runtime/requires/uplink/@label) $runtime_file]
-		}
-
-		append uplink_config_nodes "\n" {
-			<start name="nic_drv" caps="100" ld="no">
-				<binary name="linux_nic_drv"/>
-				<resource name="RAM" quantum="4M"/>
-				<provides> <service name="Uplink"/> </provides>}
-		if {$uplink_label != ""} {
-			append uplink_config_nodes {
-				<config mode="uplink_client"> <nic tap="} $uplink_label {"/> </config>}
-		}
-		append uplink_config_nodes {
-				<route>
-					<service name="Uplink"> <child name="} $project_name {"/> </service>
-					<any-service> <parent/> </any-service>
-				</route>
-			</start>
-		}
-		append uplink_provides "\n\t\t\t\t\t" \
-			{<service name="Uplink"/>}
+			{<service name="Nic"> <child name="nic_router"/> </service>}
 	}
 
 	set fs_config_nodes ""
@@ -265,8 +256,25 @@ proc generate_runtime_config { } {
 		                     "</service>"
 	}
 
+	set mesa_route ""
+	catch {
+		set mesa_node [query_node /runtime/requires/rom $runtime_file]
+		set mesa_label ""
+		catch {
+			set mesa_label [query_node /runtime/requires/rom/@label $runtime_file]
+		}
+
+		if {[string first "mesa_gpu_drv.lib.so" $mesa_label] != -1 } {
+			puts "FOUND $mesa_label"
+			append mesa_route "\n\t\t\t\t\t" \
+				"<service name=\"ROM\" $mesa_label> " \
+				"<parent label=\"mesa_gpu-softpipe.lib.so\"/> " \
+				"</service>"
+		}
+	}
+
 	install_config {
-		<config>
+		<config verbose="yes">
 			<parent-provides>
 				<service name="ROM"/>
 				<service name="PD"/>
@@ -289,17 +297,16 @@ proc generate_runtime_config { } {
 
 			} $gui_config_nodes \
 			  $nic_config_nodes \
-			  $uplink_config_nodes \
 			  $fs_config_nodes \
 			  $rtc_config_nodes {
 
 			<start name="} $project_name {" caps="} $caps {">
 				<resource name="RAM" quantum="} $ram {"/>
 				<binary name="} $binary {"/>
-				<provides>} $uplink_provides {</provides>
 				<route>} $config_route $gui_route \
 				         $capture_route $event_route \
-				         $nic_route $fs_routes $rtc_route {
+				         $nic_route $fs_routes $rtc_route \
+				         $mesa_route {
 					<service name="ROM">   <parent/> </service>
 					<service name="PD">    <parent/> </service>
 					<service name="RM">    <parent/> </service>
@@ -328,6 +335,7 @@ proc generate_runtime_config { } {
 		                    report_rom \
 		                    rom_filter
 
+
 		lappend runtime_archives "$depot_user/src/nitpicker"
 		lappend runtime_archives "$depot_user/src/report_rom"
 		lappend runtime_archives "$depot_user/src/rom_filter"
@@ -335,9 +343,11 @@ proc generate_runtime_config { } {
 
 	}
 
-	if {$nic_config_nodes != "" || $uplink_config_nodes != ""} {
-		lappend rom_modules linux_nic_drv
+	if {$nic_config_nodes != ""} {
+		lappend rom_modules linux_nic_drv \
+		                    nic_router
 
+		lappend runtime_archives "$depot_user/src/nic_router"
 		lappend runtime_archives "$depot_user/src/linux_nic_drv"
 	}
 
@@ -354,6 +364,9 @@ proc generate_runtime_config { } {
 
 		lappend runtime_archives "$depot_user/src/linux_rtc_drv"
 	}
+
+	if {$mesa_route != ""} {
+		lappend rom_modules mesa_gpu-softpipe.lib.so }
 
 	lappend runtime_archives "$depot_user/src/init"
 	lappend runtime_archives "$depot_user/src/base-linux"
