@@ -2,7 +2,7 @@
 proc create_or_update_build_dir { } {
 
 	global build_dir project_dir abi_dir tool_dir cross_dev_prefix include_dirs
-	global cppflags cflags cxxflags ldflags ldlibs project_name
+	global cppflags cflags cxxflags ldflags ldsoflags ldlibs project_name
 	global cmake_quirk_args
 	global env
 
@@ -26,6 +26,7 @@ proc create_or_update_build_dir { } {
 	lappend cmd "-DCMAKE_C_FLAGS='$cflags $cppflags'"
 	lappend cmd "-DCMAKE_CXX_FLAGS='$cxxflags $cppflags'"
 	lappend cmd "-DCMAKE_EXE_LINKER_FLAGS='$ldflags $ldlibs'"
+	lappend cmd "-DCMAKE_SHARED_LINKER_FLAGS='-nostdlib $ldsoflags $ldlibs'"
 
 	if {[info exists cmake_quirk_args]} {
 		foreach arg $cmake_quirk_args {

@@ -76,6 +76,36 @@ foreach flag $ldflags {
 	lappend prefixed_flags "-Wl,$flag" }
 set ldflags $prefixed_flags
 
+#
+# Linker flags for shared objects
+#
+# to support shared objects add <user>/api/so to the used_apis file
+set ldsoflags { }
+lappend ldsoflags $ld_march
+lappend ldsoflags -gc-sections
+lappend ldsoflags -z max-page-size=0x1000
+lappend ldsoflags --entry=0x0
+lappend ldsoflags --eh-frame-hdr
+lappend ldsoflags -T [file join $ld_script_dir genode_rel.ld]
+
+set prefixed_flags { }
+foreach flag $ldsoflags {
+	lappend prefixed_flags "-Wl,$flag" }
+set ldsoflags $prefixed_flags
+
+# search for so_support.c
+set so_support "so_support"
+foreach api $used_apis {
+	set so_support_file [file join $depot_dir $api src lib ldso $so_support.c]
+	if {[file exists $so_support_file]} {
+		file mkdir $abi_dir
+		exec $cross_dev_prefix\gcc -m64 -fPIC -c $so_support_file -o [file join $abi_dir $so_support.o]
+		break
+	}
+}
+
+lappend ldsoflags [file join $abi_dir $so_support.o]
+
 
 #
 # Library arguments for the linker

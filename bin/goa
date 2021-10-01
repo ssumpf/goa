@@ -325,6 +325,8 @@ if {$perform(diff)} {
 set used_apis { }
 if {$perform(build-dir)} {
 	set used_apis [apply_versions [read_file_content_as_list used_apis]]
+	# shared library API
+	lappend used_apis [apply_versions [file join $depot_user api so]]
 	if {[llength $used_apis] > 0} {
 		diag "used APIs: $used_apis" }
 }
