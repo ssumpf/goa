@@ -644,8 +644,11 @@ if {$perform(build)} {
 
 
 if {$perform(run)} {
-
 	source [file join $tool_dir lib run linux.tcl]
+}
+
+
+if {$perform(run) && $run_prepare} {
 
 	set pkg_dir [file join $project_dir pkg $run_pkg]
 
@@ -698,7 +701,10 @@ if {$perform(run)} {
 		exit_with_error "runtime lacks a configuration\n" \
 		                "\n You may declare a 'config' attribute in the <runtime> node, or" \
 		                "\n define a <config> node inside the <runtime> node.\n" }
+}
 
+
+if {$perform(run) && $run_execute} {
 	run_genode
 }
 
