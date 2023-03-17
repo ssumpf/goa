@@ -62,3 +62,11 @@ set  version(nfeske/api/stdcxx)                      2022-04-27
 set  version(nfeske/api/terminal_session)            2020-04-16
 set  version(nfeske/api/timer_session)               2022-08-16
 set  version(nfeske/api/vfs)                         2022-02-27
+
+# Ubuntu toolkit support
+set  version(ssumpf/api/mesa)                        2021-08-28
+set  version(ssumpf/api/qt5)                         2023-03-17
+set  version(ssumpf/api/qt5_component)               2023-03-17
+set  version(ssumpf/api/qt5_qml)                     2023-03-14
+set  version(ssumpf/pkg/ubuntu_ui_toolkit)           2023-03-17
+set  version(ssumpf/pkg/mesa_gpu-cpu)                2022-10-11
