@@ -1,6 +1,6 @@
 
 proc generate_runtime_config { } {
-	global runtime_archives runtime_file project_name rom_modules run_dir var_dir config_valid
+	global depot_dir runtime_archives runtime_file project_name rom_modules run_dir var_dir config_valid
 
 	set ram    [try_query_attr_from_runtime ram]
 	set caps   [try_query_attr_from_runtime caps]
@@ -357,6 +357,14 @@ proc generate_runtime_config { } {
 
 	lappend runtime_archives "nfeske/src/init"
 	lappend runtime_archives "nfeske/src/base-linux"
+
+	# append rom modules of runtimes
+	foreach archive [apply_versions $runtime_archives] {
+		set archive_runtime [file join $depot_dir $archive runtime]
+		if {[file exists $archive_runtime]} {
+			append rom_modules " " [content_rom_modules $archive_runtime]
+		}
+	}
 }
 
 
