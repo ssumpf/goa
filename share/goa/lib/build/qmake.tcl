@@ -84,4 +84,13 @@ proc build { } {
 
 	if {[catch {exec -ignorestderr {*}$cmd | sed "s/^/\[$project_name:qmake\] /" >@ stdout} msg]} {
 		exit_with_error "build via qmake failed:\n" $msg }
+
+	if {$verbose == 0} {
+		lappend cmd "-s"
+	} else {
+		lappend cmd "VERBOSE=1"
+	}
+
+	lappend cmd "install"
+	catch {exec -ignorestderr {*}$cmd}
 }
