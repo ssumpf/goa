@@ -16,6 +16,9 @@ SYMBOL_FILES := $(wildcard $(addsuffix /lib/symbols/*,$(addprefix $(DEPOT_DIR)/,
 # array to look up the symbol-file path for a given library name
 $(foreach S,$(SYMBOL_FILES),$(eval SYMBOL_FILE(${notdir $S}) := $S))
 
+# add version script which is in /lib when present
+$(foreach S,$(SYMBOL_FILES),$(eval SYMBOL_MAP(${notdir $S}) := $(addprefix --version-script=,$(wildcard $(dir $S)../symbol.map))))
+
 ABIS := $(addsuffix .lib.so, $(addprefix $(ABI_DIR)/,$(notdir $(SYMBOL_FILES))))
 
 default: $(ABIS)
@@ -45,4 +48,5 @@ $(ABI_DIR)/%.symbols.o: $(ABI_DIR)/%.symbols.s
 $(ABI_DIR)/%.lib.so: $(ABI_DIR)/%.symbols.o
 	$(CROSS_DEV_PREFIX)ld -o $@ -soname $(notdir $@) -shared --eh-frame-hdr $(LD_MARCH) \
 	                      -T $(TOOL_DIR)/ld/genode_rel.ld \
+	                      ${SYMBOL_MAP($*)} \
 	                      $<
