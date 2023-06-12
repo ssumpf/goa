@@ -88,7 +88,7 @@ proc run_goa_until {{test} {timeout_value 0}} {
 	#
 	# leave depot and public intact
 	#
-	exec rm -rf abi api bin build run
+	exec rm -rf var/abi var/api var/bin var/build var/run wget-log
 
 	return $result
 }
