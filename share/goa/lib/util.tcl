@@ -304,10 +304,15 @@ proc project_version { dir } {
 # If no version information is available, the original working directory is
 # scanned for corresponding Goa projects.
 proc apply_versions { archive_list } {
-	global version versions_from_genode_dir
+	global depot_user version versions_from_genode_dir
 
 	set versioned_archives { }
 	foreach archive $archive_list {
+
+		# in case user is '_', substitute with depot_user
+		if {[regexp {^_/} $archive]} {
+			regsub {^_/} $archive "$depot_user/" archive
+		}
 
 		set elements [split $archive "/"]
 
