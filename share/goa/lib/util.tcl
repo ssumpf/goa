@@ -431,10 +431,15 @@ proc validate_archives { archives } {
 # If no version information is available, the original working directory is
 # scanned for corresponding Goa projects.
 proc apply_versions { archive_list } {
-	global config::version config::versions_from_genode_dir
+	global config::version config::versions_from_genode_dir config::depot_user
 
 	set versioned_archives { }
 	foreach archive [validate_archives $archive_list] {
+
+		# in case user is '_', substitute with depot_user
+		if {[regexp {^_/} $archive]} {
+			regsub {^_/} $archive "$depot_user/" archive
+		}
 
 		set elements [split $archive "/"]
 
