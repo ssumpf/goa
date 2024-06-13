@@ -452,7 +452,7 @@ proc validate_archives { archives } {
 # scanned for corresponding Goa projects.
 proc apply_versions { archive_list } {
 	global config::version config::versions_from_genode_dir config::update_index
-	global config::arch config::depot_dir config::sculpt_version
+	global config::arch config::depot_dir config::sculpt_version config::depot_user
 
 	# update depot index if requested
 	if {$update_index} {
@@ -473,6 +473,11 @@ proc apply_versions { archive_list } {
 
 	set versioned_archives { }
 	foreach archive [validate_archives $archive_list] {
+
+		# in case user is '_', substitute with depot_user
+		if {[regexp {^_/} $archive]} {
+			regsub {^_/} $archive "$depot_user/" archive
+		}
 
 		set elements [split $archive "/"]
 
