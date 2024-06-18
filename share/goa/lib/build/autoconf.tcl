@@ -6,8 +6,12 @@ proc create_or_update_build_dir { } {
 	global build_dir cross_dev_prefix project_name project_dir
 	global cppflags cflags cxxflags ldflags ldlibs_common ldlibs_exe
 
+	puts "$build_dir"
+	puts "found config.status ? [file exists [file join $build_dir config.status]]"
+	puts "found config.status ? [file exists [file join $build_dir/build config.status]]"
+
 	# invoke configure script only once
-	if {[file exists [file join $build_dir config.status]]} {
+	if {[file exists [file join $build_dir/build config.status]]} {
 		return }
 
 	set orig_pwd [pwd]
@@ -34,6 +38,7 @@ proc create_or_update_build_dir { } {
 
 	set cmd { }
 
+if {false} {
 	lappend cmd "./configure"
 	lappend cmd "--prefix" "/"
 	lappend cmd "--host" x86_64-pc-elf
@@ -56,6 +61,23 @@ proc create_or_update_build_dir { } {
 	#
 	lappend cmd "CPP=${cross_dev_prefix}cpp"
 	lappend cmd "CXXCPP=${cross_dev_prefix}cpp"
+
+} else {
+	puts "LDLIBS_EXEC: $ldlibs_exe"
+	puts "LDLIBS_COMMON: $ldlibs_common"
+	puts "LD_FLAGS: $ldflags"
+
+	lappend cmd "./configure"
+	lappend cmd "--prefix=/"
+	lappend cmd "--host=x86_64-pc-elf"
+	lappend cmd "--extra-cflags=$cflags"
+	lappend cmd "--extra-cflags=-D__FreeBSD__"
+	lappend cmd "--extra-cxxflags=$cxxflags"
+	lappend cmd "--extra-ldflags=$ldflags"
+	lappend cmd "--extra-ldflags=$ldlibs_common"
+	lappend cmd "--extra-ldflags=$ldlibs_exe"
+	lappend cmd "--cross-prefix=${cross_dev_prefix}"
+}
 
 	# add project-specific arguments read from 'configure_args' file
 	foreach arg [read_file_content_as_list [file join $project_dir configure_args]] {
