@@ -37,7 +37,8 @@ proc create_cross_file { dir } {
 	puts $fh "strip  = '${cross_dev_prefix}strip'"
 
 	#
-	# Custom pkg-config command that checks if required libraries are present in used_apis
+	# Custom pkg-config command that checks if required libraries are present in
+	# abi_dir
 	#
 	puts $fh "pkg-config = '$tool_dir/lib/pkg-config.tcl'"
 
@@ -58,7 +59,7 @@ proc create_cross_file { dir } {
 
 
 proc create_or_update_build_dir { } {
-	global build_dir project_dir project_name
+	global build_dir project_dir abi_dir project_name
 	global cross_dev_prefix
 	global cppflags cflags cxxflags cc_cxx_opt_std
 	global ldflags ldlibs_common ldlibs_exe
@@ -72,10 +73,10 @@ proc create_or_update_build_dir { } {
 	set fh [open $pkg_config_log "WRONLY CREAT TRUNC"]
 	close $fh
 
-	# create link to used_apis to be processed by 'pkg-config.tcl'
-	set link_used_apis [file join $build_dir used_apis]
-	if {[expr ![file exists $link_used_apis]]} {
-		file link -symbolic $link_used_apis [file join $project_dir used_apis]
+	# create link to abi to be processed by 'pkg-config.tcl'
+	set link_abi [file join $build_dir abi]
+	if {[expr ![file exists $link_abi]]} {
+		file link -symbolic $link_abi $abi_dir
 	}
 
 	set source_dir [file join $project_dir src]
