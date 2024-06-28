@@ -1,21 +1,11 @@
 #!/usr/bin/env tclsh
 
 #
-# Search for modules given on command-line in used_apis and create log file
+# Search for modules given on command-line in abi directory  and create log file
 # reporting if apis are present. Always report success (exit 0).
 #
 # This script is called from Meson, it does not work when started manually
 #
-
-
-proc using_abi { abis module } {
-
-	foreach abi $abis {
-		set rootname [file rootname [file rootname [file tail $abi]]]
-		if { $rootname == $module } { return 1 }
-	}
-	return 0
-}
 
 
 proc _consume_cmdline_switches { pattern } {
@@ -57,14 +47,14 @@ _consume_cmdline_switches "-*"
 # PKG_CONFIG_LIBDIR is set in cross file via 'pkg_config_libdir' in [properties]
 set build_dir      $env(PKG_CONFIG_LIBDIR)
 set abi_dir        [file join $build_dir abi]
-set abis           [glob -directory $abi_dir -nocomplain -types { f d } *.lib.so]
+set abis           [glob -tails -directory $abi_dir -nocomplain *.lib.so]
 set pkg_config_log [file join $build_dir "pkg-config.log"]
 set modules        $argv
 
 set fh [open $pkg_config_log "WRONLY APPEND"]
 
 foreach module $modules {
-	set found [using_abi $abis $module]
+	set found [expr {[lsearch -nocase -exact $abis "$module.lib.so"] > -1}]
 	puts $fh "$module:$found"
 }
 
