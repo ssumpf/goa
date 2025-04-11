@@ -257,7 +257,7 @@ namespace eval ::config {
 				                "\n Path variable '$name' set to '$value'" \
 				                "\n defines an invalid path. Valid paths are:\n" \
 				                "\n [join [set $varname] "\n "]" \
-				                "\n\n You may consider setting '[set $varname]' in" \
+				                "\n\n You may consider setting '$varname' in" \
 				                "your \$HOME/goarc or /goarc file."
 			}
 		}
