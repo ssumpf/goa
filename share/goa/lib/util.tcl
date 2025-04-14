@@ -21,10 +21,10 @@ proc stacktrace { } {
 
 
 proc exit_with_error { args } {
-	global config::project_name verbose
+	global verbose
 
-	if {[info exists project_name]} {
-		puts -nonewline stderr "\[$project_name\] " }
+	if {[namespace exists config]} {
+		puts -nonewline stderr "\[$config::project_name\] " }
 
 	puts stderr "Error: [join $args { }]"
 
@@ -37,11 +37,11 @@ proc exit_with_error { args } {
 # Print diagnostic message in verbose mode
 #
 proc diag { args } {
-	global verbose config::project_name
+	global verbose
 
 	if {$verbose} {
-		if {[info exists project_name]} {
-			puts -nonewline "\[$project_name\] " }
+		if {[namespace exists config]} {
+			puts -nonewline "\[$config::project_name\] " }
 
 		puts "[join $args { }]"
 	}
