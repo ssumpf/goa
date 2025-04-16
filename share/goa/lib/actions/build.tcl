@@ -588,13 +588,14 @@ namespace eval goa {
 
 			# sanity check for whether genode_rel.ld was used
 			set expected_phdrs {LOAD r-x LOAD rw- DYNAMIC rw- EH_FRAME r--}
-			if {$arch == "arm_v8a"} {
-				set expected_phdrs [lreplace $expected_phdrs end end ---] }
 			set phdrs [split [exec_tool_chain objdump -p $library | grep -E "(off|filesz)"] \n]
 			foreach {off filesz} $phdrs {exp_type exp_flags} $expected_phdrs {
 				set type  [lindex $off 0]
 				set flags [lindex $filesz end]
-				if {$type != $exp_type || $flags != $exp_flags} {
+
+				# EH_FRAME with filesz/memsz 0 has --- flags
+				if {($type != $exp_type || $flags != $exp_flags)
+				    && !($type == "EH_FRAME" && $flags == "---")} {
 					exit_with_error "program headers of '[file tail $library]' don't match their definition in genode_rel.ld\n" \
 					                "\n Please check that the shared-object linker flags have been passed correctly."
 				}
