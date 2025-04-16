@@ -60,6 +60,10 @@ namespace eval gaol {
 				"you are leaving the beaten track.\n"] "\n"]
 		}
 
+		if { [file exists "/etc/ld.so.cache"] } {
+			dict lappend state robinds /etc/ld.so.cache /etc/ld.so.cache
+		}
+
 		gaol --ro-bind /usr {*}$args
 	}
 
