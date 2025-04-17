@@ -97,7 +97,7 @@ proc create_or_update_build_dir { } {
 	set qt_api ${qt_version}_base
 
 	# $qt5_tool_dir might only exist in sandbox environment, hence use ln
-	exec ln -sf $qt_tool_dir qmake_root/bin
+	exec ln -sf $qt_tool_dir/bin qmake_root/bin
 
 	file link -symbolic qmake_root/include [file join [api_archive_dir $qt_api] include]
 	file link -symbolic qmake_root/lib $abi_dir
