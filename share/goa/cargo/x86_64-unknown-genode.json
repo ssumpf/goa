@@ -13,7 +13,7 @@
   "os": "freebsd",
   "plt-by-default": false,
   "position-independent-executables": true,
-  "tls-model": "emulated",
+  "tls-model": "local-exec",
   "pre-link-args": {
     "gnu-cc": [
       "-m64"

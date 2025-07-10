@@ -1,5 +1,16 @@
+proc create_or_update_build_dir { } {
+	global config::project_name
 
-proc create_or_update_build_dir { } { mirror_source_dir_to_build_dir }
+	mirror_source_dir_to_build_dir
+
+	set     cmd [sandboxed_build_command]
+	lappend cmd rustup override set nightly
+
+	diag "switch to nightly tool chain"
+	if {[catch { exec -ignorestderr {*}$cmd | sed "s/^/\[$project_name:nightly\] /" >@ stdout} msg]} {
+		exit_with_error "failed to switch to nightly tool chain: $msg" }
+}
+
 
 proc generate_static_stubs { libs } {
 	global tool_dir verbose cflags cppflags lib_src
@@ -26,7 +37,6 @@ proc generate_static_stubs { libs } {
 		exit_with_error "failed to generate static library stubs for the following libraries:\n" \
 		                [join $libs "\n "] }
 }
-
 
 
 proc build { } {
