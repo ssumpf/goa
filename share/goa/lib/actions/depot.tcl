@@ -954,7 +954,7 @@ namespace eval goa {
 			set index_archive [versioned_project_archive index]
 	
 			foreach { path archs } [from-index [file join $depot_dir $index_archive] "pkg" "src"] {
-				foreach archive_arch $pkg_archs {
+				foreach archive_arch $archs {
 					lappend archives [apply_arch $path $archive_arch] } }
 
 			foreach { path archs } [from-index [file join $depot_dir $index_archive] "api"] {
